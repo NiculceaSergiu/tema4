@@ -1,0 +1,97 @@
+<main class="page">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Tema 4 - Angular</p>
+      <h1>Lista de cumparaturi</h1>
+      <span>Aplicatie CRUD cu formular validat, directive Angular si salvare in localStorage.</span>
+    </div>
+    <div class="summary" aria-label="Statistici lista">
+      <strong>{{ stats().total }}</strong>
+      <span>articole</span>
+    </div>
+  </header>
+
+  <section class="stats">
+    <article>
+      <span>Total</span>
+      <strong>{{ stats().total }}</strong>
+    </article>
+    <article>
+      <span>De cumparat</span>
+      <strong>{{ stats().active }}</strong>
+    </article>
+    <article>
+      <span>Cumparate</span>
+      <strong>{{ stats().bought }}</strong>
+    </article>
+  </section>
+
+  <section class="layout">
+    <form class="panel form-panel" [formGroup]="form" (ngSubmit)="submitForm()">
+      <h2>{{ editingId() ? 'Editeaza articolul' : 'Adauga articol' }}</h2>
+
+      <label>
+        Denumire
+        <input type="text" formControlName="name" placeholder="Ex: Paine">
+      </label>
+      <small *ngIf="form.controls.name.touched && form.controls.name.hasError('required')">
+        Denumirea este obligatorie.
+      </small>
+      <small *ngIf="form.controls.name.touched && form.controls.name.hasError('minlength')">
+        Denumirea trebuie sa aiba cel putin 2 caractere.
+      </small>
+
+      <label>
+        Cantitate
+        <input type="number" min="1" max="99" formControlName="quantity">
+      </label>
+      <small *ngIf="form.controls.quantity.touched && form.controls.quantity.invalid">
+        Cantitatea trebuie sa fie intre 1 si 99.
+      </small>
+
+      <label>
+        Categorie
+        <select formControlName="category">
+          <option *ngFor="let category of categories" [value]="category.value">
+            {{ category.label }}
+          </option>
+        </select>
+      </label>
+
+      <div class="actions">
+        <button type="submit">{{ editingId() ? 'Salveaza' : 'Adauga' }}</button>
+        <button *ngIf="editingId()" type="button" class="secondary" (click)="cancelEdit()">Anuleaza</button>
+      </div>
+    </form>
+
+    <section class="panel list-panel">
+      <div class="toolbar">
+        <div class="filters" role="group" aria-label="Filtrare lista">
+          <button type="button" [class.active]="filter() === 'toate'" (click)="setFilter('toate')">Toate</button>
+          <button type="button" [class.active]="filter() === 'active'" (click)="setFilter('active')">Active</button>
+          <button type="button" [class.active]="filter() === 'cumparate'" (click)="setFilter('cumparate')">Cumparate</button>
+        </div>
+        <button type="button" class="secondary" (click)="shoppingService.clearBought()">Sterge cumparate</button>
+      </div>
+
+      <p class="empty" *ngIf="filteredItems().length === 0">Nu exista articole pentru filtrul ales.</p>
+
+      <ul class="shopping-list">
+        <li *ngFor="let item of filteredItems(); trackBy: trackById" [class.bought]="item.bought">
+          <label class="check-row">
+            <input type="checkbox" [checked]="item.bought" (change)="shoppingService.toggleBought(item.id)">
+            <span>
+              <strong>{{ item.name }}</strong>
+              <em>{{ categoryLabel(item.category) }} · cantitate {{ item.quantity }}</em>
+            </span>
+          </label>
+
+          <div class="item-actions">
+            <button type="button" class="secondary" (click)="startEdit(item)">Editeaza</button>
+            <button type="button" class="danger" (click)="shoppingService.deleteItem(item.id)">Sterge</button>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </section>
+</main>
